@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="E:\OpenGL\Урок 09. Камера в OpenGL\Исходный код №4 - Урок №9. Камера в OpenGL\Hello_Window\stb_image.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
-    <ClInclude Include="E:\OpenGL\Урок 09. Камера в OpenGL\Исходный код №4 - Урок №9. Камера в OpenGL\Hello_Window\stb_image.h" />
     <ClInclude Include="shader_s.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
