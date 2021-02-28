@@ -30,22 +30,22 @@ HINSTANCE               g_hInst = nullptr;
 HWND                    g_hWnd = nullptr;
 D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-ID3D11Device* g_pd3dDevice = nullptr;
-ID3D11Device1* g_pd3dDevice1 = nullptr;
-ID3D11DeviceContext* g_pImmediateContext = nullptr;
-ID3D11DeviceContext1* g_pImmediateContext1 = nullptr;
-IDXGISwapChain* g_pSwapChain = nullptr;
-IDXGISwapChain1* g_pSwapChain1 = nullptr;
+ID3D11Device*			g_pd3dDevice = nullptr;
+ID3D11Device1*			g_pd3dDevice1 = nullptr;
+ID3D11DeviceContext*	g_pImmediateContext = nullptr;
+ID3D11DeviceContext1*	g_pImmediateContext1 = nullptr;
+IDXGISwapChain*			g_pSwapChain = nullptr;
+IDXGISwapChain1*		g_pSwapChain1 = nullptr;
 ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
-ID3D11Texture2D* g_pDepthStencil = nullptr;
+ID3D11Texture2D*		g_pDepthStencil = nullptr;
 ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
-ID3D11VertexShader* g_pVertexShader = nullptr;
-ID3D11PixelShader* g_pPixelShader = nullptr;
-ID3D11PixelShader* g_pPixelShaderSolid = nullptr;
-ID3D11InputLayout* g_pVertexLayout = nullptr;
-ID3D11Buffer* g_pVertexBuffer = nullptr;
-ID3D11Buffer* g_pIndexBuffer = nullptr;
-ID3D11Buffer* g_pConstantBuffer = nullptr;
+ID3D11VertexShader*		g_pVertexShader = nullptr;
+ID3D11PixelShader*		g_pPixelShader = nullptr;
+ID3D11PixelShader*		g_pPixelShaderSolid = nullptr;
+ID3D11InputLayout*		g_pVertexLayout = nullptr;
+ID3D11Buffer*			g_pVertexBuffer = nullptr;
+ID3D11Buffer*			g_pIndexBuffer = nullptr;
+ID3D11Buffer*			g_pConstantBuffer = nullptr;
 XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
@@ -109,7 +109,7 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 		return E_FAIL;
 
 	g_hInst = hInstance;
-	RECT rc = { 0, 0, 1024, 768 };
+	RECT rc = { 0, 0, 800, 800 };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	g_hWnd = CreateWindow(L"Window", L"Light",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
@@ -544,9 +544,27 @@ void Render()
 			timeStart = timeCur;
 		t = (timeCur - timeStart) / 1000.0f;
 	}
+	
+	g_World = XMMatrixRotationY(t);
 
 	XMFLOAT4 vLightDirs(0.0f, 0.0f, -0.5f, 1.0f);
 	XMFLOAT4 vLightColors(0.5f, 0.0f, 0.0f, 1.0f);
+
+	//XMFLOAT4 vLightDirs[2] =
+	//{
+	//	XMFLOAT4(-0.577f, 0.577f, -0.577f, 1.0f),
+	//	XMFLOAT4(0.0f, 0.0f, -0.5f, 1.0f)
+	//};
+	//XMFLOAT4 vLightColors[2] =
+	//{
+	//	XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+	//	XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
+	//};
+
+	XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
+	XMVECTOR vLightDir = XMLoadFloat4(&vLightDirs);
+	vLightDir = XMVector3Transform(vLightDir, mRotate);
+	XMStoreFloat4(&vLightDirs, vLightDir);
 
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
 	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -557,6 +575,10 @@ void Render()
 	cb1.mProjection = XMMatrixTranspose(g_Projection);
 	cb1.vLightDir = vLightDirs;
 	cb1.vLightColor = vLightColors;
+	//cb1.vLightDir[0] = vLightDirs[0];
+	//cb1.vLightDir[1] = vLightDirs[1];
+	//cb1.vLightColor[0] = vLightColors[0];
+	//cb1.vLightColor[1] = vLightColors[1];
 	cb1.vOutputColor = XMFLOAT4(0, 0, 0, 0);
 	XMStoreFloat3(&cb1.Eye, g_Eye);
 
@@ -578,6 +600,21 @@ void Render()
 
 	g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+	//for (int m = 0; m < 2; m++)
+	//{
+	//	XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&vLightDirs[m]));
+	//	XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
+	//	mLight = mLightScale * mLight;
+
+	//	// Update the world variable to reflect the current light
+	//	cb1.mWorld = XMMatrixTranspose(mLight);
+	//	cb1.vOutputColor = vLightColors[m];
+	//	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb1, 0, 0);
+
+	//	g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
+	//	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	//}
 
 	g_pSwapChain->Present(0, 0);
 }
